@@ -1,34 +1,58 @@
-name: Unlock Next Step
+name: Débloquer l'étape suivante
 on:
   pull_request:
-    types: [closed]
+    types: [closed]  # Se déclenche quand une PR est fermée
+    branches:  # Limiter aux branches du jeu
+      - 'etape1'
+      - 'etape2'
+      - 'etape3'
+      - 'etape4'
+      - 'etape5'
+
 jobs:
-  unlock-next:
+  unlock-next-step:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true  # S'exécute uniquement si la PR est fusionnée
     steps:
-      - name: Checkout repository
+      - name: Récupérer le dépôt principal
         uses: actions/checkout@v3
 
-      - name: Unlock next step on fork
+      - name: Débloquer la branche suivante dans le fork
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token pour authentification
         run: |
-          # Récupérer le dépôt du fork de l'étudiant
-          git remote add student-fork https://github.com/${{ github.actor }}/repo-name.git
+          # Ajouter le dépôt forké de l'étudiant
+          git remote add student-fork https://x-access-token:${GITHUB_TOKEN}@github.com/HabibouHassane/Library_project.git
           git fetch student-fork
 
-          # Si la PR est sur etape1, débloquer etape2 sur le fork de l'étudiant
-          if [ "${{ github.event.pull_request.base.ref }}" == "etape1" ]; then
-            git checkout etape2
-            git push student-fork etape2
-          # Si la PR est sur etape2, débloquer etape3 sur le fork de l'étudiant
-          elif [ "${{ github.event.pull_request.base.ref }}" == "etape2" ]; then
-            git checkout etape3
-            git push student-fork etape3
-          # Si la PR est sur etape3, débloquer etape4 sur le fork de l'étudiant
-          elif [ "${{ github.event.pull_request.base.ref }}" == "etape3" ]; then
-            git checkout etape4
-            git push student-fork etape4
-          # Si la PR est sur etape4, débloquer etape5 sur le fork de l'étudiant
-          elif [ "${{ github.event.pull_request.base.ref }}" == "etape4" ]; then
-            git checkout etape5
-            git push student-fork etape5
-          fi
+          # Vérifier la branche de base de la PR et débloquer la suivante
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          case "$BASE_REF" in
+            "etape1")
+              git checkout etape2 || git checkout -b etape2
+              git push student-fork etape2
+              echo "Étape 2 débloquée !"
+              ;;
+            "etape2")
+              git checkout etape3 || git checkout -b etape3
+              git push student-fork etape3
+              echo "Étape 3 débloquée !"
+              ;;
+            "etape3")
+              git checkout etape4 || git checkout -b etape4
+              git push student-fork etape4
+              echo "Étape 4 débloquée !"
+              ;;
+            "etape4")
+              git checkout etape5 || git checkout -b etape5
+              git push student-fork etape5
+              echo "Étape 5 débloquée !"
+              ;;
+            "etape5")
+              echo "Félicitations, toutes les étapes sont terminées !"
+              ;;
+            *)
+              echo "Erreur : branche $BASE_REF non reconnue dans le jeu de progression."
+              exit 1
+              ;;
+          esac
