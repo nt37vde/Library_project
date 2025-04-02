@@ -9,14 +9,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Unlock next step
+      - name: Unlock next step on fork
         run: |
+          # Récupérer le dépôt du fork de l'étudiant
+          git remote add student-fork https://github.com/${{ github.actor }}/repo-name.git
+          git fetch student-fork
+
+          # Si la PR est sur etape1, débloquer etape2 sur le fork de l'étudiant
           if [ "${{ github.event.pull_request.base.ref }}" == "etape1" ]; then
-            gh pr merge -s etape2
+            git checkout etape2
+            git push student-fork etape2
+          # Si la PR est sur etape2, débloquer etape3 sur le fork de l'étudiant
           elif [ "${{ github.event.pull_request.base.ref }}" == "etape2" ]; then
-            gh pr merge -s etape3
+            git checkout etape3
+            git push student-fork etape3
+          # Si la PR est sur etape3, débloquer etape4 sur le fork de l'étudiant
           elif [ "${{ github.event.pull_request.base.ref }}" == "etape3" ]; then
-            gh pr merge -s etape4
+            git checkout etape4
+            git push student-fork etape4
+          # Si la PR est sur etape4, débloquer etape5 sur le fork de l'étudiant
           elif [ "${{ github.event.pull_request.base.ref }}" == "etape4" ]; then
-            gh pr merge -s etape5
+            git checkout etape5
+            git push student-fork etape5
           fi
