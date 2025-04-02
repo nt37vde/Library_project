@@ -1,0 +1,22 @@
+name: Unlock Next Step
+on:
+  pull_request:
+    types: [closed]
+jobs:
+  unlock-next:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Unlock next step
+        run: |
+          if [ "${{ github.event.pull_request.base.ref }}" == "etape1" ]; then
+            gh pr merge -s etape2
+          elif [ "${{ github.event.pull_request.base.ref }}" == "etape2" ]; then
+            gh pr merge -s etape3
+          elif [ "${{ github.event.pull_request.base.ref }}" == "etape3" ]; then
+            gh pr merge -s etape4
+          elif [ "${{ github.event.pull_request.base.ref }}" == "etape4" ]; then
+            gh pr merge -s etape5
+          fi
